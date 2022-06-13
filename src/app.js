@@ -1,14 +1,14 @@
-import * as dotenv from "dotenv";
+const  dotenv = require ("dotenv");
 dotenv.config({ path: ".env" });
-import createError, { HttpError } from  'http-errors';
-import express, { NextFunction } from 'express';
-import path from 'path';
-import cookieParser from 'cookie-parser';
-import logger from  'morgan';
+const createError = require('http-errors');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 
 
-import indexRouter from './routes/index';
-import usersRouter from './routes/users';
+const indexRouter = require ('./routes/index');
+const usersRouter = require ( './routes/users');
 
 const app = express();
 
@@ -33,10 +33,7 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function( err: createError.HttpError,
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction) {
+app.use(function( err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
@@ -46,4 +43,4 @@ app.use(function( err: createError.HttpError,
   res.render('error');
 });
 
-export default app;
+module.exports = app;
