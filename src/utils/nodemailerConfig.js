@@ -1,10 +1,9 @@
 module.exports = {
-    // service: process.env.SERVICE,
-    host: 'smtp.gmail.com',
+    host: process.env.SERVICE,
     port: 465,
     secure: true,
     auth: {
-        user: "igesamuel007@gmail.com",
-        pass: "nqmiavmjacsviurx",
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
     },
 };
