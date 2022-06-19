@@ -1,6 +1,7 @@
-const CustomError = require('../errors');
+const fs = require('fs');
 const mongoose = require('mongoose');
 const Joi = require('joi');
+const cloudinary = require('cloudinary').v2;
 const { User } = require('../models/User');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
@@ -15,22 +16,29 @@ const { Token } = require('../models/Token');
 const { attachCookiesToResponse } = require('../utils/jwt');
 const { sendResetPasswordEmail } = require('../utils/sendResetPasswordEmail');
 const { hashString } = require('../utils/createHash');
+const { validateImageFile } = require('../utils/validateImage');
+const BadRequestError = require('../errors/bad-request');
+const UnauthenticatedError = require('../errors/unauthenticated');
+
 
 const salt = process.env.SALT_ROUNDS
 
 const register = async (req, res) => {
-    const { 
-        name, 
-        email, 
-        phoneNum, 
-        user_type, 
-        password,
-        address,
-        city,
-        bikeDocument,
-        valid_IdCard,
-        passport_photo, 
-    } = req.body;
+    const { name, email, phoneNum, user_type, password, address, city } = req.body;
+    const files = req.files;
+    let bikeDoc;
+    let passport;
+    let idCard;
+    let bikeDocument;
+    let passport_photo;
+    let valid_IdCard;
+
+
+    const emailAlreadyExists = await User.findOne({ email });
+
+    if (emailAlreadyExists) {
+        throw new BadRequestError('Email already exists');
+    }
 
     const userSchema = Joi.object({
         name: Joi.string().min(3).max(50).required(),
@@ -49,31 +57,71 @@ const register = async (req, res) => {
         const result = addShipperSchema.validate(req.body);
 
         if(result.error){
-            throw new CustomError.BadRequestError(transformJoiMsg(result.error.details[0].message));
+            throw new BadRequestError(transformJoiMsg(result.error.details[0].message));
         }
     }
 
     if (user_type === 'rider') {
+        // Check if files exist
+        await validateImageFile(files, 'No File Uploaded');
+
         // Extend schema with Rider fields
         const addRiderSchema = userSchema.keys({
-            city: Joi.string().required(),
-            bikeDocument: Joi.string().required(),
-            valid_IdCard: Joi.string().required(),
-            passport_photo: Joi.string().required(),
+            city: Joi.string().required()
         })
 
         const result = addRiderSchema.validate(req.body);
 
         if(result.error){
-            throw new CustomError.BadRequestError(transformJoiMsg(result.error.details[0].message));
+            throw new BadRequestError(transformJoiMsg(result.error.details[0].message));
         }
-    }
-    
-    
-    const emailAlreadyExists = await User.findOne({ email });
 
-    if (emailAlreadyExists) {
-        throw new CustomError.BadRequestError('Email already exists');
+        bikeDocument = files.bikeDocument;
+        passport_photo = files.passport_photo;
+        valid_IdCard = files.valid_IdCard;
+
+        // Check if each of the files properties are exist
+        await validateImageFile(bikeDocument, 'Please provide bike document');
+        await validateImageFile(passport_photo, 'Please provide passport photo');
+        await validateImageFile(valid_IdCard, 'Please provide valid ID card');
+
+        // Check mimeType of files
+        await validateImageFile(bikeDocument.mimetype.startsWith('application'), 'Invalid, please upload a valid bike document');
+        await validateImageFile(passport_photo.mimetype.startsWith('image'), 'Invalid, please upload a valid passport photo');
+        await validateImageFile(valid_IdCard.mimetype.startsWith('image'), 'Invalid, please upload a valid ID card');
+
+        const maxSize = 1024 * 1024;
+
+        if (bikeDocument.size > maxSize || passport_photo.size > maxSize || valid_IdCard.size > maxSize) {
+            throw new BadRequestError('Please upload image smaller 1MB');
+        }
+
+        const cloudy_bikeDocument = await cloudinary.uploader.upload(
+            bikeDocument.tempFilePath,
+            {
+              use_filename: true,
+              folder: 'FILE-DOCUMENT',
+            }
+        );
+        const cloudy_passportPhoto = await cloudinary.uploader.upload(
+            passport_photo.tempFilePath,
+            {
+              use_filename: true,
+              folder: 'FILE-IMAGE',
+            }
+        );
+        const cloudy_validIdCard = await cloudinary.uploader.upload(
+            valid_IdCard.tempFilePath,
+            {
+              use_filename: true,
+              folder: 'FILE-IMAGE',
+            }
+        );
+
+        
+        bikeDoc = cloudy_bikeDocument.secure_url;
+        passport = cloudy_passportPhoto.secure_url;
+        idCard = cloudy_validIdCard.secure_url;
     }
 
     const verificationToken = crypto.randomBytes(40).toString('hex');
@@ -100,9 +148,9 @@ const register = async (req, res) => {
         await Rider.create({
             user_id,
             city,
-            bikeDocument,
-            valid_IdCard,
-            passport_photo,
+            bikeDocument : bikeDoc,
+            valid_IdCard : idCard,
+            passport_photo: passport,
         })
     }
 
@@ -115,6 +163,12 @@ const register = async (req, res) => {
         origin,
     });
 
+    if (user_type === 'rider') {
+        fs.unlinkSync(bikeDocument.tempFilePath);
+        fs.unlinkSync(passport_photo.tempFilePath);
+        fs.unlinkSync(valid_IdCard.tempFilePath);
+    }
+
     res.status(StatusCodes.CREATED).json({
         msg: 'Success! Please check your email to verify your account.',
     });
@@ -125,11 +179,11 @@ const verifyEmail = async (req, res) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-        throw new CustomError.UnauthenticatedError('verification Failed');
+        throw new UnauthenticatedError('verification Failed');
     }
 
     if (user.verificationToken !== verificationToken) {
-        throw new CustomError.UnauthenticatedError('verification Failed');
+        throw new UnauthenticatedError('verification Failed');
     }
 
     user.isVerified = true;
@@ -147,22 +201,22 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        throw new CustomError.BadRequestError('Please provide email and password');
+        throw new BadRequestError('Please provide email and password');
     }
 
     const user = await User.findOne({ email });
 
     if (!user) {
-        throw new CustomError.UnauthenticatedError('Login Failed');
+        throw new UnauthenticatedError('Login Failed');
     }
 
     const isPasswordCorrect = await comparePasswords(password, user.password);
 
     if (!isPasswordCorrect) {
-        throw new CustomError.UnauthenticatedError('Invalid Credentials');
+        throw new UnauthenticatedError('Invalid Credentials');
     }
     if (!user.isVerified) {
-        throw new CustomError.UnauthenticatedError('Please verify your email');
+        throw new UnauthenticatedError('Please verify your email');
     }
 
 
@@ -176,7 +230,7 @@ const login = async (req, res) => {
     if (existingToken) {
         const { isValid } = existingToken;
         if (!isValid) {
-          throw new CustomError.UnauthenticatedError('Invalid Credentials');
+          throw new UnauthenticatedError('Invalid Credentials');
         }
         refreshToken = existingToken.refreshToken;
         attachCookiesToResponse({ res, user: tokenUser, refreshToken });
@@ -200,7 +254,7 @@ const login = async (req, res) => {
 const forgotPassword = async (req, res) => {
     const { email } = req.body;
     if (!email) {
-        throw new CustomError.BadRequestError('Please provide valid email');
+        throw new BadRequestError('Please provide valid email');
     }
 
     const user = await User.findOne({ email });
