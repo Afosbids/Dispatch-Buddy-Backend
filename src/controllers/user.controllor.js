@@ -163,11 +163,9 @@ const register = async (req, res) => {
         origin,
     });
 
-    if (user_type === 'rider') {
-        fs.unlinkSync(bikeDocument.tempFilePath);
-        fs.unlinkSync(passport_photo.tempFilePath);
-        fs.unlinkSync(valid_IdCard.tempFilePath);
-    }
+    fs.unlinkSync(bikeDocument.tempFilePath);
+    fs.unlinkSync(passport_photo.tempFilePath);
+    fs.unlinkSync(valid_IdCard.tempFilePath);
 
     res.status(StatusCodes.CREATED).json({
         msg: 'Success! Please check your email to verify your account.',
