@@ -12,6 +12,11 @@ const connectDB = require('./db_config/db');
 
 const userAuthRouter = require('./routes/auth/user');
 
+const swaggerUI = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load('./swagger.yaml');
+
+
 const app = express();
 
 
@@ -29,6 +34,7 @@ app.use(express.static('./public'));
 
 
 // Routes
+app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use('/auth', userAuthRouter );
 
 // middleware
