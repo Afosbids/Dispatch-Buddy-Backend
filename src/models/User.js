@@ -1,32 +1,53 @@
-const mongoose =  require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const validator = require('validator');
 
 
-const UserSchema = new Schema({
-    name:{
-        type:String,
-        required:[true, 'Name field is required']
-    },
-    phoneNumber:{
-        type:String,
-        required:[true, 'Phone number field is required']
-    },
-    email:{
-        type:String,
-        required:[true, 'Email field is required']
-    },
-    userType:{
+const userSchema = new mongoose.Schema({
+    name: {
         type: String,
-        enum : ['Shipper','Rider'],
-        default: 'Shipper'
+        required: [true, 'Please provide name'],
+        minlength: 3,
+        maxlength: 50,
     },
-    password:{
-        type:String,
-        required:[true, 'Password field is required']
+    email: {
+        type: String,
+        unique: true,
+        required: [true, 'Please provide email'],
+        validate: {
+            validator: validator.isEmail,
+            message: 'Please provide a valid email'
+        }
+    },
+    phoneNum : {
+        type: String,
+        required: [true, 'Please provide phone number'],
+        minlength: 10
+    },
+    password: {
+        type: String,
+        required: [true, 'Please provide password'],
+        minlength: 6,
+    },
+    user_type: {
+        type: String,
+        enum: ['shipper', 'rider'],
+        required: [true, 'Please provide user type']
+    },
+    verificationToken: String,
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verified: Date,
+    passwordToken: {
+        type: String,
+    },
+    passwordTokenExpirationDate: {
+        type: Date,
     }
-},{ timestamps: true })
+}, { timestamps: true })
 
 
-const User = mongoose.model('User', UserSchema)
 
-module.exports = User
+const User = mongoose.model("User", userSchema);
+module.exports = { User };
