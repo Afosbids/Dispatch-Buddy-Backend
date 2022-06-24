@@ -25,6 +25,7 @@ const salt = process.env.SALT_ROUNDS
 
 const register = async (req, res) => {
     const { name, email, phoneNum, user_type, password, address, city } = req.body;
+    
     const files = req.files;
     let bikeDoc;
     let passport;
@@ -32,7 +33,6 @@ const register = async (req, res) => {
     let bikeDocument;
     let passport_photo;
     let valid_IdCard;
-
 
     const emailAlreadyExists = await User.findOne({ email });
 
@@ -76,9 +76,9 @@ const register = async (req, res) => {
             throw new BadRequestError(transformJoiMsg(result.error.details[0].message));
         }
 
-        bikeDocument = files.bikeDocument;
-        passport_photo = files.passport_photo;
-        valid_IdCard = files.valid_IdCard;
+        bikeDocument = files?.bikeDocument;
+        passport_photo = files?.passport_photo;
+        valid_IdCard = files?.valid_IdCard;
 
         // Check if each of the files properties are exist
         await validateImageFile(bikeDocument, 'Please provide bike document');
@@ -152,9 +152,13 @@ const register = async (req, res) => {
             valid_IdCard : idCard,
             passport_photo: passport,
         })
+
+        fs.unlinkSync(bikeDocument.tempFilePath);
+        fs.unlinkSync(passport_photo.tempFilePath);
+        fs.unlinkSync(valid_IdCard.tempFilePath);
     }
 
-    const origin = 'https://dispatch-buddy.herokuapp.com/';
+    const origin = 'https://dispatch-buddy.netlify.app';
 
     await sendVerificationEmail({
         name: user.name,
@@ -163,9 +167,8 @@ const register = async (req, res) => {
         origin,
     });
 
-    fs.unlinkSync(bikeDocument.tempFilePath);
-    fs.unlinkSync(passport_photo.tempFilePath);
-    fs.unlinkSync(valid_IdCard.tempFilePath);
+
+    
 
     res.status(StatusCodes.CREATED).json({
         msg: 'Success! Please check your email to verify your account.',
@@ -260,7 +263,7 @@ const forgotPassword = async (req, res) => {
     if (user) {
         const passwordToken = crypto.randomBytes(70).toString('hex');
         // send email
-        const origin = 'https://dispatch-buddy.herokuapp.com/';
+        const origin = 'https://dispatch-buddy.netlify.app';
         await sendResetPasswordEmail({
             name: user.name,
             email: user.email,
