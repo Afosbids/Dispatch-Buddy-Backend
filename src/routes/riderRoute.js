@@ -4,7 +4,7 @@ const { rideHistory, createBid, bidStatus } = require('../controllers/rider.cont
 
 
 
-router.get('/rides/:id', rideHistory)
+router.get('/history/:id', rideHistory)
 router.post('/bid', createBid);
 router.put('/status/:id', bidStatus);
 
