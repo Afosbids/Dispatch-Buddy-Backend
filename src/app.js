@@ -38,7 +38,7 @@ app.use(express.static('./public'));
 // Routes
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use('/api/v1/auth', userAuthRouter );
-app.use('/api/v1/order', orderRoute );
+app.use('/api/v1/order', [ orderRoute ] );
 app.use('/api/v1/rider', riderRoute );
 
 // middleware

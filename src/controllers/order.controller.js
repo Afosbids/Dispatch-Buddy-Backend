@@ -1,9 +1,10 @@
 const Order = require('../models/Order');
 const { StatusCodes } = require('http-status-codes');
 
+
 const orderHistory = (req, res) => {
       try{
-        Order.find().sort({ createdAt: -1 })
+        Order.find({ _id: req.params.id }).sort({ createdAt: -1 })
         .then(orders => {
               res.status(StatusCodes.OK)
               .json({orders});
@@ -15,8 +16,10 @@ const orderHistory = (req, res) => {
       }
 };
 
+
 const orderStatus = async (req,res,next) => {
-       Order.findOneAndUpdate({ _id: req.params.orderId }, req.body.orderStatus)
+
+       Order.findOneAndUpdate({ _id: req.params.id }, {orderStatus:req.body.orderStatus})
         .then((order) => {
           if (!order) {
             return res.status(Status.NOT_FOUND).send(
@@ -34,7 +37,7 @@ const orderStatus = async (req,res,next) => {
         })
         .catch((err) => {
           res.status(StatusCodes.NOT_FOUND)
-            json({
+            .json({
               message: "Order not found!",
               err,
             })
@@ -43,8 +46,7 @@ const orderStatus = async (req,res,next) => {
 
 
 const createOrder = (req, res) => {
-    const newOrder = new Order(req.body);
-
+  const newOrder = new Order(req.body);
     newOrder.save((err, order) => {
         if (err) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -52,10 +54,10 @@ const createOrder = (req, res) => {
                     message: "Some error occured and a new Product could not be created!",
                 })
         }
-
         res.status(StatusCodes.ACCEPTED)
             .json({
                 order,
+                id:order.id
             })
     });
 };

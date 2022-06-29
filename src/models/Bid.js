@@ -23,4 +23,4 @@ const BidSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const Bid = mongoose.model('Bid', BidSchema);
-module.exports = { Bid };
+module.exports = Bid;
