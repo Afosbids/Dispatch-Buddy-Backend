@@ -3,7 +3,6 @@ const { StatusCodes } = require('http-status-codes');
 
 
 const rideHistory = (req, res) => {
-    console.log(req.params.id)
       try{
         Bid.find({ rider_id:req.params.id }).sort({ createdAt: -1 })
         .then(bids => {
@@ -27,7 +26,6 @@ const bidStatus = async (req,res,next) => {
                 message: "Order not found!",
               })
           }
-
           res
           .status(StatusCodes.ACCEPTED)
             .json({

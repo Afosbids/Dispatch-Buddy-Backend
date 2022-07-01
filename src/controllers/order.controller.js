@@ -18,7 +18,6 @@ const orderHistory = (req, res) => {
 
 
 const orderStatus = async (req,res,next) => {
-
        Order.findOneAndUpdate({ _id: req.params.id }, {orderStatus:req.body.orderStatus})
         .then((order) => {
           if (!order) {
@@ -46,6 +45,7 @@ const orderStatus = async (req,res,next) => {
 
 
 const createOrder = (req, res) => {
+  
   const newOrder = new Order(req.body);
     newOrder.save((err, order) => {
         if (err) {
