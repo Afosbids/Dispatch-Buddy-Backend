@@ -4,7 +4,7 @@ const { orderStatus, createOrder, orderHistory } = require('../controllers/order
 
 
 
-router.get('/orders/:id', orderHistory)
+router.get('/orders', orderHistory)
 router.post('/request', createOrder);
 router.put('/status/:id', orderStatus);
 

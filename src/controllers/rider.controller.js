@@ -1,9 +1,29 @@
 const Bid = require('../models/Bid');
 const { StatusCodes } = require('http-status-codes');
+const {Client} = require("@googlemaps/google-maps-services-js");
 
 
 const rideHistory = (req, res) => {
       try{
+
+        const client = new Client({});
+
+        client
+          .elevation({
+            params: {
+              locations: [{ lat: 45, lng: -110 }],
+              key: "asdf",
+            },
+            // timeout: 1000, // milliseconds
+            })
+            .then((r) => {
+                console.log(r.data.results[0].elevation);
+            })
+            .catch((e) => {
+                console.log(e.response.data.error_message);
+            });
+
+
         Bid.find({ rider_id:req.params.id }).sort({ createdAt: -1 })
         .then(bids => {
               res.status(StatusCodes.OK)
@@ -17,7 +37,7 @@ const rideHistory = (req, res) => {
 };
 
 
-const bidStatus = async (req,res,next) => {
+const bidStatus = async (req,res) => {
        Bid.findOneAndUpdate({ _id: req.params.id }, {bidStatus:req.body.bidStatus})
         .then( bid => {
           if (!bid) {
