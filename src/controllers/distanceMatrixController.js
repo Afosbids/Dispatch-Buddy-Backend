@@ -19,7 +19,14 @@ const distanceMatrixAPI = async (req, res) => {
         ...request,
       },
     });
-    res.status(StatusCodes.OK).json(distance.data);
+    const dist = distance.data.rows[0].elements[0].distance.text
+    const duration = distance.data.rows[0].elements[0].duration.text
+    res.status(StatusCodes.OK).json({
+      pickupLocation,
+      dropOffLocation,
+      distance:dist, 
+      estimatedTime:duration,
+    });
   } catch (e) {
     res.status(StatusCodes.BAD_REQUEST).json(e.message);
   }
