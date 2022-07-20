@@ -57,4 +57,18 @@ const createOrder = (req, res) => {
   });
 };
 
-module.exports = { orderHistory, orderStatus, createOrder };
+// getOrderStatus
+const getOrderStatus = async(req, res) => {
+  try {
+    const { id } = req.params;
+    const getStatus = await Order.find({_id: id}
+    );
+    res.status(200).json(getStatus[0].orderStatus)
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: error.message });
+  }
+}
+
+module.exports = {orderHistory ,orderStatus, createOrder, getOrderStatus}

@@ -28,6 +28,17 @@ const orderSchema = new mongoose.Schema(
       enum: ["Pending", "Accepted", "Delivered"],
       default: "Pending",
     },
+    startTrip: {
+      type: String,
+      default: "",
+    },
+    endTrip: {
+      type: String,
+      default: "",
+    },
+    duration: {
+      type: Number,
+    },
   },
   { timestamps: true }
 );
