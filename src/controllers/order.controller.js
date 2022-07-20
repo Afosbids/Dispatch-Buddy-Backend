@@ -7,7 +7,7 @@ const orderHistory = (req, res, next) => {
       .sort({ createdAt: -1 })
       .then((orders) => {
         console.log(orders);
-        res.status(StatusCodes.OK).json({ orders, count: orders.length });
+        res.status(StatusCodes.OK).json({shipper:req.user.name,orders, count: orders.length });
       });
   } catch (error) {
     res
