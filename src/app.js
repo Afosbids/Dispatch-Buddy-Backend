@@ -13,6 +13,7 @@ const connectDB = require('./db_config/db');
 const userAuthRouter = require('./routes/auth/user');
 const orderRoute  = require('./routes/orderRoute');
 const riderRoute  = require('./routes/riderRoute');
+const distanceMatrixRoute = require('./routes/distanceMatrixRoute');
 const transactionRoute = require('./routes/transactionRoute');
 
 const swaggerUI = require('swagger-ui-express');
@@ -39,8 +40,10 @@ app.use(express.static('./public'));
 // Routes
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use('/api/v1/auth', userAuthRouter );
-app.use('/api/v1/order', [ orderRoute ] );
+app.use('/api/v1/order', orderRoute );
 app.use('/api/v1/rider', riderRoute );
+app.use('/api/v1/distance', distanceMatrixRoute)
+
 app.use('/', transactionRoute);
 
 // middleware
