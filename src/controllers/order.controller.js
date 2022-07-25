@@ -3,6 +3,7 @@ const { StatusCodes } = require("http-status-codes");
 
 const orderHistory = (req, res, next) => {
   try {
+    if (!req.user) return res.status(StatusCodes.FORBIDDEN)
     Order.find({ user_id: req.user.id })
       .sort({ createdAt: -1 })
       .then((orders) => {
