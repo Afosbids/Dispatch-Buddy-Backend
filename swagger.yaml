@@ -1,0 +1,269 @@
+swagger: '2.0'
+info:
+  version: '1.0'
+  title: dispatch_buddy
+  contact: {}
+host: dispatch-buddy.herokuapp.com
+basePath: /auth/user
+securityDefinitions: {}
+schemes:
+- https
+consumes:
+- application/json
+produces:
+- application/json
+paths:
+  /create:
+    post:
+      description: >-
+        **Required parameter to create a rider account**
+
+        {
+           name : string,
+           email: string,
+           phoneNum: string,
+           user_type: 'rider',
+           password: string,
+           city: string,
+           bikeDocument: file,
+           valid_IdCard: file,
+           passport_photo: file
+        }
+
+        Note: The data format to create a rider is in form data.
+
+
+        **Required parameter to create a shipper account**
+
+
+        {
+           name : string
+           email: string
+           phoneNum: string
+           user_type: 'shipper'
+           password: string,
+           address: string
+        }
+
+
+        Note: Data format to create a shipper could either be in form data or JSON
+      summary: create user
+      tags:
+      - auth
+      operationId: createuser
+      deprecated: false
+      produces:
+      - application/json
+      consumes:
+      - application/x-www-form-urlencoded
+      parameters:
+      - name: name
+        in: formData
+        required: true
+        type: string
+        description: ''
+      - name: email
+        in: formData
+        required: true
+        type: string
+        description: ''
+      - name: phoneNum
+        in: formData
+        required: true
+        type: integer
+        format: int64
+        description: ''
+      - name: user_type
+        in: formData
+        required: true
+        type: string
+        description: ''
+      - name: password
+        in: formData
+        required: true
+        type: integer
+        format: int32
+        description: ''
+      - name: city
+        in: formData
+        required: true
+        type: string
+        description: ''
+      - name: bikeDocument
+        in: formData
+        required: true
+        type: string
+        description: ''
+      - name: passport_photo
+        in: formData
+        required: true
+        type: string
+        description: ''
+      - name: valid_IdCard
+        in: formData
+        required: true
+        type: string
+        description: ''
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      security: []
+  /verify-email:
+    post:
+      summary: verify email
+      tags:
+      - auth
+      operationId: verifyemail
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/verifyemailrequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      security: []
+  /login:
+    post:
+      summary: user login
+      tags:
+      - auth
+      operationId: userlogin
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/userloginrequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      security: []
+  /forgot-password:
+    post:
+      summary: forgot password
+      tags:
+      - auth
+      operationId: forgotpassword
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/forgotpasswordrequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      security: []
+  /reset-password:
+    post:
+      summary: reset password
+      tags:
+      - auth
+      operationId: resetpassword
+      deprecated: false
+      produces:
+      - application/json
+      parameters:
+      - name: Body
+        in: body
+        required: true
+        description: ''
+        schema:
+          $ref: '#/definitions/resetpasswordrequest'
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      security: []
+  /:
+    get:
+      summary: New Request
+      tags:
+      - Misc
+      operationId: NewRequest
+      deprecated: false
+      produces:
+      - application/json
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          headers: {}
+definitions:
+  verifyemailrequest:
+    title: verifyemailrequest
+    example:
+      verificationToken: e943870f60c65c29da5644f53a6724a68be2b94d550393e3eb9031ddc8ef1e1cc5bdcb5b7f627b83
+      email: samuelige.iyanu@gmail.com
+    type: object
+    properties:
+      verificationToken:
+        type: string
+      email:
+        type: string
+    required:
+    - verificationToken
+    - email
+  userloginrequest:
+    title: userloginrequest
+    example:
+      email: samuelige.iyanu@gmail.com
+      password: '12345678'
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+  forgotpasswordrequest:
+    title: forgotpasswordrequest
+    example:
+      email: samuelige.iyanu@gmail.com
+    type: object
+    properties:
+      email:
+        type: string
+    required:
+    - email
+  resetpasswordrequest:
+    title: resetpasswordrequest
+    example:
+      token: 8943e767567a8f978aa2d11b6b82bc62
+      email: samuelige.iyanu@gmail.com
+      password: '123456789'
+    type: object
+    properties:
+      token:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - token
+    - email
+    - password
+tags:
+- name: auth
+  description: ''
